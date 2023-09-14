@@ -1,1 +1,1 @@
-# russian_hackathon_LiDAR
+# Russian Hackathon (LiDAR)
