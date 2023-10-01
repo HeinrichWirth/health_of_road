@@ -34,6 +34,6 @@ python - основной язык
 
 - Вид на данные с числовой шкалой
 
-- ![z-coord_3d](https://github.com/HeinrichWirth/health_of_road/blob/main/images/z-coord_3d.jpg)
+![z-coord_3d](https://github.com/HeinrichWirth/health_of_road/blob/main/images/z-coord_3d.jpg)
 
 ## Результаты
