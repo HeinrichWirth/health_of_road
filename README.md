@@ -30,10 +30,13 @@ python - основной язык
 **Изначальные данные**.
 - Цвет показывает координаты по оси Z:
 
-![z-coord](https://github.com/HeinrichWirth/health_of_road/blob/main/images/z-coord.jpg)
+   ![z-coord](https://github.com/HeinrichWirth/health_of_road/blob/main/images/z-coord.jpg)
 
 - Вид на данные с числовой шкалой
 
-![z-coord_3d](https://github.com/HeinrichWirth/health_of_road/blob/main/images/z-coord_3d.jpg)
+   ![z-coord_3d](https://github.com/HeinrichWirth/health_of_road/blob/main/images/z-coord_3d.jpg)
+
+- Исправленные данные
+   ![fixed_z-coord](https://github.com/HeinrichWirth/health_of_road/blob/main/images/fixed_z-coord.jpg)
 
 ## Результаты
