@@ -38,7 +38,7 @@
 
    ![z-coord_3d](https://github.com/HeinrichWirth/health_of_road/blob/main/images/z-coord_3d.jpg)
 
-- Исправленные данные
+  **Исправленные данные**
    ![fixed_z-coord](https://github.com/HeinrichWirth/health_of_road/blob/main/images/fixed_z-coord.jpg)
 
 ## Результаты
