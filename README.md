@@ -57,9 +57,9 @@ python -m road_defects.cli \
        --gps    ./gps.csv
 
 # 3 Tune sensitivity
-#   sigma        = 2.0  → shallower defects
-#   eps_sample   = 0.30 → looser DBSCAN on surface
-#   eps_defect   = 0.09 → looser DBSCAN on defects
+#   sigma        = 2.0  shallower defects
+#   eps_sample   = 0.30 looser DBSCAN on surface
+#   eps_defect   = 0.09 looser DBSCAN on defects
 ```
 
 Unit‑tests (`pytest`) provide a smoke‑check that the package imports and config instantiates.
