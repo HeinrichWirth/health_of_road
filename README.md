@@ -1,48 +1,103 @@
-# Детекция дефектов дорожного покрытия без размеченных данных с использование LiDAR
+# Road-Surface Defect Detection (LiDAR, label-free)
 
-## Введение
-Протяженность дорог общего пользования в Москве превышает 6 тысяч километров и каждый год увеличивается не менее, чем на 100 километров. С постоянным ростом протяженности дорожной сети увеличиваются затраты и сложность своевременного обнаружения и устранения дефектов дорожного покрытия.
-Такие дефекты являются причиной повышения аварийности на дорогах. Их профилактика (раннее обнаружение) позволяет значительно снизить затраты на ремонт покрытия и предотвратить аварийные ситуации.
+A **compact hackathon solution** that turns raw LiDAR frames into GPS-tagged pothole alerts – with **zero manual labels**.  
+Everything you need lives in the `road_defects/` package and a short CLI:
 
-## Задача
-Разработка алгоритма, способного обнаруживать дефекты дорожного покрытия, используя неразмеченные данные с лидара.
+```bash
+python -m road_defects.cli \
+    --points ./data/points   # *.bin frames
+    --gps    ./data/gps.csv
+```
 
-## Основная концепция и этапы решения
-Как можно за 48 часов, с помощью облака точек и без разметки создать модель, которая будет определять дефекты? Было принято решение использовать механизм кластеризации.
+<sub>*Single-purpose, no heavy infra. Clean Python 3.11, Open3D 0.18 & NumPy only.*</sub>
 
-Этапы:
-1. **Конвертация данных:** Преобразование данных из формата ROS2 в CSV.
-2. **Предобработка данных:** Исправление аномалий и дефектов в данных.
-3. **Объединение данных:** Слияние нескольких кадров для улучшения разрешения с использованием специализированных алгоритмов.
-4. **Отбор данных:** Выделение точек, представляющих собой дорожное покрытие.
-   ![Визуализация точек соответсвующих дороге](https://github.com/HeinrichWirth/health_of_road/blob/main/images/road.jpg)
-5. **Зона детекции:** Определение области вокруг беспилотного транспортного средства с максимальной плотностью точек.
-   ![Визуализация точек соответсвующих области поиска](https://github.com/HeinrichWirth/health_of_road/blob/main/images/detection_area.png)
-6. **Кластеризация:** Использование DBSCAN для идентификации дефектов, опираясь на отклонения в 4 и более сигм.
+---
 
-## Используемые технологии
-- **ROS2** для обработки исходных данных.
-- **Open3D** для кластеризации и обработки облака точек.
-- **Python** в качестве основного языка программирования.
-- **DBSCAN** как метод кластеризации.
+## 1  Problem statement
+Detect depressions or cracks in asphalt **before** they become safety hazards, even when the only inputs are:
 
-## Трудности
-Данные оказались очень "сырыми".
-А именно:
-1. **Недостаточное разрешение:** Из-за низкой плотности точек лидара пришлось комбинировать данные из нескольких кадров, используя алгоритм ICP.
-2. **Ошибки в координатах:** Наблюдались аномалии в координатах оси Z, что потребовало применения алгоритма RANSAC для коррекции.
+* sequential **LiDAR frames** (`rowid_123.bin`, float32 XYZ);
+* an optional **GPS log** mapping each frame to latitude / longitude.
 
-   **Изначальные данные**.
-- Цвет показывает координаты по оси Z:
+---
 
-   ![z-coord](https://github.com/HeinrichWirth/health_of_road/blob/main/images/z-coord.jpg)
+## 2  Data snapshot
 
-- Вид на данные с числовой шкалой
+| Item          | Typical size | Notes                                                            |
+| ------------- | -----------: | ---------------------------------------------------------------- |
+| `rowid_*.bin` | 5 k - 50 k   | 48‑byte point records, no labels                                 |
+| `gps.csv`     | = frames     | `points_file_path, latitude, longitude, altitude`                |
 
-   ![z-coord_3d](https://github.com/HeinrichWirth/health_of_road/blob/main/images/z-coord_3d.jpg)
+---
 
-  **Исправленные данные**
-   ![fixed_z-coord](https://github.com/HeinrichWirth/health_of_road/blob/main/images/fixed_z-coord.jpg)
+## 3  Pipeline overview
 
-## Результаты
-Был разработан эффективный алгоритм, который может детектировать дефекты дорожного покрытия, используя данные с лидара и GPS. Единственным недостатком осталось отсутствие веб-интерфейса для визуализации результатов на карте.
+| # | Step | Illustration |
+|:-:| ---- | ------------ |
+| 1 | **Load & clean**  – read *.bin*, drop statistical outliers | — |
+| 2 | **Merge frames** – Point‑to‑Point ICP → denser cloud | — |
+| 3 | **Flatten ground** – RANSAC plane fit, rotate to XY | — |
+| 4 | **Slice road layer** – keep densest Z‑slice | ![Road slice](images/road.jpg) |
+| 5 | **Detection zone** – crop dense area around vehicle | ![Zone](images/detection_area.png) |
+| 6 | **Surface clustering** – DBSCAN on 10 % subsample → dominant cluster | — |
+| 7 | **4‑σ filter** – points ≥ σ deeper than mean ⇒ potential defects | — |
+| 8 | **Defect clustering & GPS tag** – tight DBSCAN, log coords | — |
+
+---
+
+## 4  Quick start
+
+```bash
+# 1 Install deps
+pip install -r requirements.txt   # open3d, numpy, pandas, pytest
+
+# 2 Process data
+python -m road_defects.cli \
+       --points ./your_frames \
+       --gps    ./gps.csv
+
+# 3 Tune sensitivity
+#   sigma        = 2.0  → shallower defects
+#   eps_sample   = 0.30 → looser DBSCAN on surface
+#   eps_defect   = 0.09 → looser DBSCAN on defects
+```
+
+Unit‑tests (`pytest`) provide a smoke‑check that the package imports and config instantiates.
+
+---
+
+## 5  Challenges & fixes
+
+| Issue | Mitigation | Before | After |
+|-------|-----------|--------|-------|
+| Low point density | merge 75 frames via ICP | — | — |
+| Z-axis spikes | plane fit + rotation | ![Z spikes](images/z-coord.jpg) | ![Fixed Z](images/fixed_z-coord.jpg) |
+
+3‑D view of raw cloud:  
+![Z spikes 3‑D](images/z-coord_3d.jpg)
+
+---
+
+## 6  Key takeaways
+
+* **Label‑free still works** - density + sigma‑rules + DBSCAN catch obvious potholes in minutes.  
+* **Less code > more code** - < 300 lines beat heavier pipelines for hackathon speed.  
+* **Config first** - all hyper‑params in one dataclass; no magic numbers.
+
+---
+
+## 7  Tech stack
+
+* Python 3.11, Open3D 0.18, NumPy, Pandas  
+* No ROS, CUDA or web‑UI – built for quick offline inspection.
+
+---
+
+## 8  Credits
+
+* Original LiDAR samples courtesy of the hackathon organisers.  
+* Thanks to the PyData & Open3D communities.
+
+---
+
+*Written in 2025 by Heinrich Wirth*
