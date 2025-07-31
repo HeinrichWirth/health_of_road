@@ -34,14 +34,14 @@ Detect depressions or cracks in asphalt **before** they become safety hazards, e
 
 | # | Step | Illustration |
 |:-:| ---- | ------------ |
-| 1 | **Load & clean**  – read *.bin*, drop statistical outliers | — |
-| 2 | **Merge frames** – Point‑to‑Point ICP → denser cloud | — |
-| 3 | **Flatten ground** – RANSAC plane fit, rotate to XY | — |
-| 4 | **Slice road layer** – keep densest Z‑slice | ![Road slice](images/road.jpg) |
-| 5 | **Detection zone** – crop dense area around vehicle | ![Zone](images/detection_area.png) |
-| 6 | **Surface clustering** – DBSCAN on 10 % subsample → dominant cluster | — |
-| 7 | **4‑σ filter** – points ≥ σ deeper than mean ⇒ potential defects | — |
-| 8 | **Defect clustering & GPS tag** – tight DBSCAN, log coords | — |
+| 1 | **Load & clean**  - read *.bin*, drop statistical outliers | - |
+| 2 | **Merge frames** - Point‑to‑Point ICP → denser cloud | - |
+| 3 | **Flatten ground** - RANSAC plane fit, rotate to XY | - |
+| 4 | **Slice road layer** - keep densest Z-slice | ![Road slice](images/road.jpg) |
+| 5 | **Detection zone** - crop dense area around vehicle | ![Zone](images/detection_area.png) |
+| 6 | **Surface clustering** - DBSCAN on 10 % subsample -> dominant cluster | - |
+| 7 | **4‑σ filter** - points > sigma deeper than mean -> potential defects | - |
+| 8 | **Defect clustering & GPS tag** - tight DBSCAN, log coords | - |
 
 ---
 
@@ -70,7 +70,7 @@ Unit‑tests (`pytest`) provide a smoke‑check that the package imports and con
 
 | Issue | Mitigation | Before | After |
 |-------|-----------|--------|-------|
-| Low point density | merge 75 frames via ICP | — | — |
+| Low point density | merge 75 frames via ICP | - | - |
 | Z-axis spikes | plane fit + rotation | ![Z spikes](images/z-coord.jpg) | ![Fixed Z](images/fixed_z-coord.jpg) |
 
 3‑D view of raw cloud:  
@@ -89,7 +89,7 @@ Unit‑tests (`pytest`) provide a smoke‑check that the package imports and con
 ## 7  Tech stack
 
 * Python 3.11, Open3D 0.18, NumPy, Pandas  
-* No ROS, CUDA or web‑UI – built for quick offline inspection.
+* No ROS, CUDA or web‑UI - built for quick offline inspection.
 
 ---
 
